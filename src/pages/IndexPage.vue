@@ -1,32 +1,68 @@
 <template>
   <q-page class="row items-center justify-evenly">
     <q-btn color="primary" @click="startClick">Start</q-btn>
+    <q-btn color="secondary outline" @click="stopClick">Stop</q-btn>
   </q-page>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue';
 import MicrophoneStream from 'microphone-stream';
+import { Readable } from 'stream';
+import { AudioStream } from '@aws-sdk/client-transcribe-streaming';
 
-let micStream;
+let micStream: MicrophoneStream;
 
 export default defineComponent({
   name: 'IndexPage',
   components: {},
   setup() {
+    micStream = new MicrophoneStream();
+
+    async function* createAudioStream(audio: Readable): AsyncIterable<AudioStream> {
+      for await (const chunk of audio) {
+        const audioChunk = { AudioEvent: { AudioChunk: chunk } };
+        console.log('audioChunk', { audioChunk });
+        yield audioChunk
+      }
+    }
+
     const startClick = async () => {
       console.log('start');
-      micStream = new MicrophoneStream();
 
-      const media = await navigator.mediaDevices.getUserMedia({
-        video: false,
-        audio: true
-      });
+      try {
+        const media = await navigator.mediaDevices.getUserMedia({
+          video: false,
+          audio: true
+        });
 
-      // TODO: this causes the Buffer error
-      micStream.setStream(media);
+        micStream.setStream(media);
+        micStream.on('data', (chunk) => {
+          console.log('data', { chunk })
+        });
+
+        createAudioStream(micStream);
+
+      } catch (error) {
+        console.log(error);
+      } finally {
+        if (micStream) {
+          micStream.stop();
+        }
+      }
     }
-    return { startClick };
+
+    const stopClick = async () => {
+      console.log('stop');
+      if (micStream) {
+        micStream.stop();
+      }
+    }
+
+    return {
+      startClick,
+      stopClick
+    };
   }
 });
 </script>

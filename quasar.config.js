@@ -10,7 +10,9 @@
 
 
 const { configure } = require('quasar/wrappers');
-
+// const { NodeGlobalsPolyfillPlugin } = require('@esbuild-plugins/node-globals-polyfill');
+// const { NodeModulesPolyfillPlugin } = require('@esbuild-plugins/node-modules-polyfill');
+// const rollupNodePolyFill = require('rollup-plugin-node-polyfills');
 
 module.exports = configure(function (/* ctx */) {
   return {
@@ -76,11 +78,38 @@ module.exports = configure(function (/* ctx */) {
       // polyfillModulePreload: true,
       // distDir
 
-      // extendViteConf (viteConf) {},
+      // extendViteConf(viteConf) {
+      //   console.log('before', JSON.stringify(viteConf, null, 2));
+
+      //   viteConf.optimizeDeps.esbuildOptions = {
+      //     define: {
+      //       global: 'globalThis',
+      //     },
+      //     plugins: [
+      //       NodeGlobalsPolyfillPlugin({
+      //         buffer: true,
+      //         process: true,
+      //       }),
+      //       NodeModulesPolyfillPlugin()
+      //     ]
+      //   };
+
+      //   viteConf.build.rollupOptions = {
+      //     plugins: [
+      //       rollupNodePolyFill()
+      //     ]
+      //   }
+
+
+      //   console.log('after', JSON.stringify(viteConf, null, 2));
+      // },
+
       // viteVuePluginOptions: {},
 
 
       vitePlugins: [
+        // ['vite-plugin-node-polyfills', { ...pluginOptions }],
+        // ['vite-plugin-node-polyfills', { protocolImports: true }],
         [require('vite-plugin-node-polyfills'), { protocolImports: true }],
         // [ 'package-name', { ..options.. } ]
       ]
